@@ -2,6 +2,8 @@ package com.ngo.ngoplatform.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 
 @Entity
 @Table(name = "needs")
@@ -39,4 +41,7 @@ public class Need {
     @ManyToOne
     @JoinColumn(name = "ngo_id")
     private Ngo ngo;
+    @OneToMany(mappedBy = "need", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Contribution> contributions;
 }

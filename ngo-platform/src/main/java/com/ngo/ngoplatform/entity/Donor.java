@@ -2,6 +2,8 @@ package com.ngo.ngoplatform.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 
 @Entity
 @Table(name = "donors")
@@ -27,4 +29,7 @@ public class Donor {
     private String phone;
 
     private String address;
+    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Contribution> contributions;
 }
