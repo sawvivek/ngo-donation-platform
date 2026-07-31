@@ -1,8 +1,10 @@
 package com.ngo.ngoplatform.service;
 
 import com.ngo.ngoplatform.entity.Contribution;
+import com.ngo.ngoplatform.entity.Donor;
 import com.ngo.ngoplatform.entity.Need;
 import com.ngo.ngoplatform.repository.ContributionRepository;
+import com.ngo.ngoplatform.repository.DonorRepository;
 import com.ngo.ngoplatform.repository.NeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,13 +21,35 @@ public class ContributionService {
     @Autowired
     private NeedRepository needRepository;
 
+    @Autowired
+    private DonorRepository donorRepository;
+
     public Contribution saveContribution(Contribution contribution) {
+
+        if (contribution.getType() == null) {
+            throw new IllegalArgumentException("Contribution type is required (MONEY or ITEM)");
+        }
+
+        if (contribution.getNeed() == null || contribution.getNeed().getId() == null) {
+            throw new IllegalArgumentException("Need id is required");
+        }
 
         contribution.setDonationDate(LocalDate.now());
 
+        // fetch the real Need instead of trusting whatever was passed in the request body
         Need need = needRepository.findById(
                 contribution.getNeed().getId()
-        ).orElseThrow();
+        ).orElseThrow(() -> new RuntimeException("Need not found with id: " + contribution.getNeed().getId()));
+
+        contribution.setNeed(need);
+
+        // fetch the real Donor too (was missing before - request body donor was used as-is)
+        if (contribution.getDonor() != null && contribution.getDonor().getId() != null) {
+            Donor donor = donorRepository.findById(
+                    contribution.getDonor().getId()
+            ).orElseThrow(() -> new RuntimeException("Donor not found with id: " + contribution.getDonor().getId()));
+            contribution.setDonor(donor);
+        }
 
         if (contribution.getType().equalsIgnoreCase("MONEY")) {
 
@@ -38,7 +62,9 @@ public class ContributionService {
                     need.getCurrentAmount() + amount
             );
 
-            if (need.getCurrentAmount() >= need.getTargetAmount()) {
+            double target = need.getTargetAmount() == null ? 0 : need.getTargetAmount();
+
+            if (target > 0 && need.getCurrentAmount() >= target) {
                 need.setStatus("COMPLETED");
             }
 
@@ -53,7 +79,9 @@ public class ContributionService {
                     need.getReceivedQuantity() + qty
             );
 
-            if (need.getReceivedQuantity() >= need.getRequiredQuantity()) {
+            int required = need.getRequiredQuantity() == null ? 0 : need.getRequiredQuantity();
+
+            if (required > 0 && need.getReceivedQuantity() >= required) {
                 need.setStatus("COMPLETED");
             }
         }
@@ -69,6 +97,11 @@ public class ContributionService {
 
     public Contribution getContributionById(Long id) {
         return contributionRepository.findById(id).orElse(null);
+    }
+
+    // donor history - Step 2
+    public List<Contribution> getContributionsByDonorId(Long donorId) {
+        return contributionRepository.findByDonorId(donorId);
     }
 
     public void deleteContribution(Long id) {

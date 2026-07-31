@@ -1,6 +1,8 @@
 package com.ngo.ngoplatform.controller;
 
+import com.ngo.ngoplatform.entity.Contribution;
 import com.ngo.ngoplatform.entity.Donor;
+import com.ngo.ngoplatform.service.ContributionService;
 import com.ngo.ngoplatform.service.DonorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,9 @@ public class DonorController {
 
     @Autowired
     private DonorService donorService;
+
+    @Autowired
+    private ContributionService contributionService;
 
     @PostMapping
     public Donor createDonor(@RequestBody Donor donor) {
@@ -39,5 +44,10 @@ public class DonorController {
     public String deleteDonor(@PathVariable Long id) {
         donorService.deleteDonor(id);
         return "Donor Deleted Successfully";
+    }
+
+    @GetMapping("/{id}/contributions")
+    public List<Contribution> getDonorContributions(@PathVariable Long id) {
+        return contributionService.getContributionsByDonorId(id);
     }
 }
