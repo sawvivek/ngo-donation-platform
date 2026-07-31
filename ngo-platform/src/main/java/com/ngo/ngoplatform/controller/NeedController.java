@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/needs")
@@ -39,5 +40,10 @@ public class NeedController {
     public String deleteNeed(@PathVariable Long id) {
         needService.deleteNeed(id);
         return "Need Deleted Successfully";
+    }
+
+    @GetMapping("/{id}/progress")
+    public Map<String, Object> getNeedProgress(@PathVariable Long id) {
+        return needService.getNeedProgress(id);
     }
 }
