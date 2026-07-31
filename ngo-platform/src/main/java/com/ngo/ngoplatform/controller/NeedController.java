@@ -1,0 +1,43 @@
+package com.ngo.ngoplatform.controller;
+
+import com.ngo.ngoplatform.entity.Need;
+import com.ngo.ngoplatform.service.NeedService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/needs")
+public class NeedController {
+
+    @Autowired
+    private NeedService needService;
+
+    @PostMapping
+    public Need createNeed(@RequestBody Need need) {
+        return needService.saveNeed(need);
+    }
+
+    @GetMapping
+    public List<Need> getAllNeeds() {
+        return needService.getAllNeeds();
+    }
+
+    @GetMapping("/{id}")
+    public Need getNeedById(@PathVariable Long id) {
+        return needService.getNeedById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Need updateNeed(@PathVariable Long id,
+                           @RequestBody Need need) {
+        return needService.updateNeed(id, need);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteNeed(@PathVariable Long id) {
+        needService.deleteNeed(id);
+        return "Need Deleted Successfully";
+    }
+}
